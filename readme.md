@@ -1,6 +1,6 @@
 # hafas-find-trip
 
-**Provide a location, get the vehicle you're most likely in.**
+**Provide location and bearing, get the vehicle you're most likely in.**
 
 [![npm version](https://img.shields.io/npm/v/hafas-find-trip.svg)](https://www.npmjs.com/package/hafas-find-trip)
 ![ISC-licensed](https://img.shields.io/github/license/derhuerst/hafas-find-trip.svg)
