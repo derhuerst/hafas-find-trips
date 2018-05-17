@@ -1,0 +1,35 @@
+{
+	"name": "hafas-find-trip",
+	"description": "Provide a location, get the vehicle you're most likely in.",
+	"version": "0.1.0",
+	"main": "index.js",
+	"files": [
+		"index.js"
+	],
+	"keywords": [
+		"hafas",
+		"public transport",
+		"transit",
+		"checkin",
+		"locate",
+		"nearby"
+	],
+	"author": "Jannis R <mail@jannisr.de>",
+	"homepage": "https://github.com/derhuerst/hafas-find-trip",
+	"repository": "derhuerst/hafas-find-trip",
+	"bugs": "https://github.com/derhuerst/hafas-find-trip/issues",
+	"license": "ISC",
+	"engines": {
+		"node": ">=6"
+	},
+	"dependencies": {
+	},
+	"devDependencies": {
+		"tap-min": "^1.2.2",
+		"tape": "^4.8.0"
+	},
+	"scripts": {
+		"test": "env NODE_ENV=dev node test.js | tap-min",
+		"prepublishOnly": "npm test"
+	}
+}
