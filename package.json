@@ -23,6 +23,11 @@
 		"node": ">=6"
 	},
 	"dependencies": {
+		"@turf/helpers": "^6.1.3",
+		"@turf/point-to-line-distance": "^6.0.0",
+		"gps-distance": "0.0.4",
+		"hafas-fetch-track-slice": "^0.1.0",
+		"p-queue": "^2.4.2"
 	},
 	"devDependencies": {
 		"tap-min": "^1.2.2",
