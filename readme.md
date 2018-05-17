@@ -1,6 +1,12 @@
 # hafas-find-trip
 
-**Provide location and bearing, get the vehicle you're most likely in.**
+**Provide location and bearing, get the public transport vehicle you're most likely in.**
+
+Location and bearing are expected to be inaccurate because they come from a mobile device. Also, The vehicle movements from [the underlying `radar()` API](https://github.com/public-transport/hafas-client/blob/0840d69ee9cc0fb9b4bf35237fa93f677991bd7d/docs/journey-leg.md) are often *not* the actual position, but the estimated position, based on their current delays and their track. To compensate for this, `hafas-find-trip`
+
+- filters by product if you provide one,
+- checks if the location is close to where vehicles have recently been or will soon be,
+- takes the bearing of each vehicle into account.
 
 [![npm version](https://img.shields.io/npm/v/hafas-find-trip.svg)](https://www.npmjs.com/package/hafas-find-trip)
 ![ISC-licensed](https://img.shields.io/github/license/derhuerst/hafas-find-trip.svg)
@@ -17,8 +23,32 @@ npm install hafas-find-trip
 
 ## Usage
 
+If possible, provide location, bearing and product. An example from Berlin:
+
 ```js
-todo
+const query = {
+	// U6 tunnel, northbound
+	latitude: 52.496633,
+	longitude: 13.390944,
+	bearing: 16, // degrees, 0 is north
+	product: 'subway'
+}
+```
+
+If you don't provide the product, `hafas-find-trip` will instead apply its heuristic to all vehicles nearby. If you don't provide a bearing, it will estimate purely on the distance to the track of each vehicle.
+
+```js
+const findTrip = require('hafas-find-trip')
+const hafas = require('vbb-hafas')
+
+findTrip(hafas, query)
+.then((vehicle) => {
+	console.log(vehicle.line.name, vehicle.direction, location)
+})
+.catch((err) => {
+	console.error(err)
+	process.exitCode = 1
+})
 ```
 
 
