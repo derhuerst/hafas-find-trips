@@ -2,8 +2,8 @@
 
 const {point} = require('@turf/helpers')
 const fetchTrackSlice = require('hafas-fetch-track-slice')
-const distance = require('gps-distance')
-const pointToLineDistance = require('@turf/point-to-line-distance').default
+const nearestPointOnLine = require('@turf/nearest-point-on-line').default
+const bearing = require('@turf/bearing').default
 const Queue = require('p-queue')
 
 const findTrip = (hafas, pos, opt = {}) => {
@@ -26,9 +26,14 @@ const findTrip = (hafas, pos, opt = {}) => {
 	}, opt)
 	.then((vehicles) => {
 		const matches = []
-		const queue = new Queue({concurrency: 4})
+		// The vehicle movements from `radar()` are often *not* the actual
+		// position, but the estimated position, based on their current delays
+		// and their track. Because this is inaccurate, we check if `point` is
+		// close to where the vehicle has recently been or will soon be.
+		// todo: use the speed to find a match
+		// todo: filter by product
 
-		const findByTrack = (v) => () => {
+		const perVehicle = (v) => () => {
 			const frame = v.frames && v.frames[0] && v.frames[0]
 			const prev = frame && frame.origin
 			const next = frame && frame.destination
@@ -40,32 +45,24 @@ const findTrip = (hafas, pos, opt = {}) => {
 			return fetchTrackSlice(hafas, prev, next, v.journeyId, lineName)
 			.catch(() => null) // swallow errors
 			.then((trackSlice) => {
-				if (trackSlice) {
-					const d = pointToLineDistance(p, trackSlice)
-					if (d < .04) matches.push([d, v])
+				if (!trackSlice) return null
+				const nearestOnTrack = nearestPointOnLine(trackSlice, p)
+				const distanceToTrack = nearestOnTrack.properties.dist
+				let score = distanceToTrack
+
+				if ('number' === typeof pos.bearing) {
+					const crds = trackSlice.coordinates
+					const nextStop = point(crds[crds.length - 1])
+					const trackBearing = bearing(nearestOnTrack, nextStop)
+					score *= 1 + Math.abs(trackBearing - pos.bearing) / 90
 				}
+
+				matches.push([score, v])
 			})
 		}
 
-		// The vehicle movements from `radar()` are often *not* the actual
-		// position, but the estimated position, based on their current delays
-		// and their track. Because this is inaccurate, we
-		// - check if `point` is close to the estimated position of a vehicle,
-		// - check if `point` is close to where the vehicle has been or will be.
-
-		// todo: use the direction to find a match
-		// todo: use the speed to find a match
-		// todo: scoring to find the best system
-		for (let v of vehicles) {
-			const l = v.location
-			const d = distance(lat, long, l.latitude, l.longitude)
-			if (d < .08) {
-				matches.push([d, v])
-			} else {
-				queue.add(findByTrack(v))
-				.catch(console.error) // todo: handle errors
-			}
-		}
+		const queue = new Queue({concurrency: 4})
+		for (let v of vehicles) queue.add(perVehicle(v))
 
 		return queue
 		.onIdle()
