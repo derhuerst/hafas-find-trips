@@ -1,6 +1,6 @@
 {
-	"name": "hafas-find-trip",
-	"description": "Provide location and bearing, get the vehicle you're most likely in.",
+	"name": "hafas-find-trips",
+	"description": "Provide location and bearing, get a list of vehicles you're most likely in.",
 	"version": "0.1.0",
 	"main": "index.js",
 	"files": [
@@ -15,9 +15,9 @@
 		"nearby"
 	],
 	"author": "Jannis R <mail@jannisr.de>",
-	"homepage": "https://github.com/derhuerst/hafas-find-trip",
-	"repository": "derhuerst/hafas-find-trip",
-	"bugs": "https://github.com/derhuerst/hafas-find-trip/issues",
+	"homepage": "https://github.com/derhuerst/hafas-find-trips",
+	"repository": "derhuerst/hafas-find-trips",
+	"bugs": "https://github.com/derhuerst/hafas-find-trips/issues",
 	"license": "ISC",
 	"engines": {
 		"node": ">=6"
