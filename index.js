@@ -6,6 +6,7 @@ const nearestPointOnLine = require('@turf/nearest-point-on-line').default
 const distance = require('@turf/distance').default
 const bearing = require('@turf/bearing').default
 const Queue = require('p-queue')
+const debug = require('debug')('hafas-find-trips')
 
 const findTrip = (hafas, query, opt = {}) => {
 	const {latitude: lat, longitude: long} = query
@@ -35,7 +36,6 @@ const findTrip = (hafas, query, opt = {}) => {
 		// position, but the estimated position, based on their current delays
 		// and their track. Because this is inaccurate, we check if `point` is
 		// close to where the vehicle has recently been or will soon be.
-		// todo: use the speed to find a match
 
 		const perVehicle = (v) => () => {
 			const loc = point([v.location.longitude, v.location.latitude])
@@ -43,6 +43,7 @@ const findTrip = (hafas, query, opt = {}) => {
 			const lineName = l && l.name || 'foo'
 
 			if (query.product && l && l.product && l.product !== query.product) {
+				debug(lineName, 'wrong product', l.product)
 				return Promise.resolve()
 			}
 
@@ -50,13 +51,18 @@ const findTrip = (hafas, query, opt = {}) => {
 			const prev = frame && frame.origin
 			const next = frame && frame.destination
 			if (!prev || !next) {
+				debug(lineName, 'prev', !!prev, 'next', !!next)
 				return Promise.resolve() // todo: what to do here?
 			}
 
 			return fetchTrackSlice(hafas, prev, next, v.journeyId, lineName)
 			.catch(() => null) // swallow errors
 			.then((trackSlice) => {
-				if (!trackSlice) return null
+				if (!trackSlice) {
+					debug(lineName, 'no trackSlice')
+					return null
+				}
+
 				const nearestOnTrack = nearestPointOnLine(trackSlice, p)
 				const distanceToTrack = nearestOnTrack.properties.dist * 1000
 				const distanceOnTrack = distance(nearestOnTrack, loc) * 1000
@@ -70,6 +76,7 @@ const findTrip = (hafas, query, opt = {}) => {
 				if ('number' === typeof query.bearing) {
 					const crds = trackSlice.coordinates
 					const nextStop = point(crds[crds.length - 1])
+					// todo: compute bearing using the track, not the next stop
 					const trackBearing = bearing(nearestOnTrack, nextStop)
 					match.trackBearing = trackBearing
 					score *= 1 + Math.abs(trackBearing - query.bearing) / 90
