@@ -38,12 +38,15 @@ const query = {
 If you don't provide the product, `hafas-find-trips` will instead apply its heuristic to all vehicles nearby. If you don't provide a bearing, it will estimate purely on the distance to the track of each vehicle.
 
 ```js
-const findTrip = require('hafas-find-trips')
+const findTrips = require('hafas-find-trips')
 const hafas = require('vbb-hafas')
 
-findTrip(hafas, query)
-.then((vehicle) => {
-	console.log(vehicle.line.name, vehicle.direction, location)
+findTrips(hafas, query)
+.then((matches) => {
+	for (let match of matches) {
+		const m = match.movement
+		console.log(match.score, m.line.name, m.direction, m.location)
+	}
 })
 .catch((err) => {
 	console.error(err)

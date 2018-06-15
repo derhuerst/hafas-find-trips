@@ -1,7 +1,7 @@
 {
 	"name": "hafas-find-trips",
 	"description": "Provide location and bearing, get a list of vehicles you're most likely in.",
-	"version": "0.1.0",
+	"version": "0.2.0",
 	"main": "index.js",
 	"files": [
 		"index.js"
@@ -32,12 +32,6 @@
 		"p-queue": "^2.4.2"
 	},
 	"devDependencies": {
-		"tap-min": "^1.2.2",
-		"tape": "^4.8.0",
 		"vbb-hafas": "^5.0.0-alpha.3"
-	},
-	"scripts": {
-		"test": "env NODE_ENV=dev node test.js | tap-min",
-		"prepublishOnly": "npm test"
 	}
 }

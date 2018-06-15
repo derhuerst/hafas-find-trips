@@ -2,9 +2,9 @@
 
 const hafas = require('vbb-hafas')
 
-const findTrip = require('.')
+const findTrips = require('.')
 
-findTrip(hafas, {
+findTrips(hafas, {
 	// U6 tunnel, northbound
 	latitude: 52.496633,
 	longitude: 13.390944,
