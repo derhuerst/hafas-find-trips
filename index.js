@@ -6,7 +6,6 @@ const nearestPointOnLine = require('@turf/nearest-point-on-line').default
 const distance = require('@turf/distance').default
 const bearing = require('@turf/bearing').default
 const Queue = require('p-queue')
-const maxBy = require('lodash.maxby')
 
 const findTrip = (hafas, query, opt = {}) => {
 	const {latitude: lat, longitude: long} = query
@@ -15,8 +14,7 @@ const findTrip = (hafas, query, opt = {}) => {
 	opt = Object.assign({
 		results: 10,
 		duration: 1,
-		frames: 2,
-		maxScore: 10
+		frames: 2
 	}, opt)
 
 	return hafas.radar({
@@ -64,14 +62,21 @@ const findTrip = (hafas, query, opt = {}) => {
 				const distanceOnTrack = distance(nearestOnTrack, loc) * 1000
 				let score = distanceToTrack + Math.pow(distanceOnTrack, -3)
 
+				const match = {
+					movement: v,
+					distanceToTrack, distanceOnTrack
+				}
+
 				if ('number' === typeof query.bearing) {
 					const crds = trackSlice.coordinates
 					const nextStop = point(crds[crds.length - 1])
 					const trackBearing = bearing(nearestOnTrack, nextStop)
+					match.trackBearing = trackBearing
 					score *= 1 + Math.abs(trackBearing - query.bearing) / 90
 				}
 
-				if (score < opt.maxScore) matches.push([score, v])
+				match.score = score
+				matches.push(match)
 			})
 		}
 
@@ -80,7 +85,7 @@ const findTrip = (hafas, query, opt = {}) => {
 
 		return queue
 		.onIdle()
-		.then(() => maxBy(matches, 0))
+		.then(() => matches)
 	})
 }
 
