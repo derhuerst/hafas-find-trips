@@ -3,7 +3,7 @@
 const {point} = require('@turf/helpers')
 const fetchTrackSlice = require('hafas-fetch-track-slice')
 const nearestPointOnLine = require('@turf/nearest-point-on-line').default
-const distance = require('@turf/distance').default
+const lineSlice = require('@turf/line-slice').default
 const bearing = require('@turf/bearing').default
 const Queue = require('p-queue')
 const debug = require('debug')('hafas-find-trips')
@@ -65,7 +65,8 @@ const findTrip = (hafas, query, opt = {}) => {
 
 				const nearestOnTrack = nearestPointOnLine(trackSlice, p)
 				const distanceToTrack = nearestOnTrack.properties.dist * 1000
-				const distanceOnTrack = distance(nearestOnTrack, loc) * 1000
+				const toVehicle = lineSlice(nearestOnTrack, loc, trackSlice)
+				const distanceOnTrack = length(toVehicle) * 1000
 				let score = distanceToTrack + Math.pow(distanceOnTrack, -3)
 
 				const match = {
