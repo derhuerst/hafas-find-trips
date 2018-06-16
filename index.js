@@ -82,7 +82,7 @@ const findTrip = (hafas, query, opt = {}) => {
 				const match = {
 					movement: v,
 					distanceToTrack, distanceOnTrack,
-					score: distanceToTrack + Math.pow(distanceOnTrack, -3)
+					score: Math.sqrt(distanceToTrack) + Math.pow(distanceOnTrack, -3)
 				}
 
 				// We determine a guide point 300 meters down the track to
