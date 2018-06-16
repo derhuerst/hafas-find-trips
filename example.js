@@ -11,7 +11,18 @@ findTrips(hafas, {
 	bearing: 16, // degrees, 0 is north
 	product: 'subway'
 })
-.then(console.log)
+.then((matches) => {
+	for (let match of matches) {
+		const m = match.movement
+		const n = m.line && m.line.name
+		console.error(n, m.journeyId, {
+			distanceToTrack: match.distanceToTrack,
+			distanceOnTrack: match.distanceOnTrack,
+			trackBearing: match.trackBearing,
+			score: match.score
+		})
+	}
+})
 .catch((err) => {
 	console.error(err)
 	process.exitCode = 1
