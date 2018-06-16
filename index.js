@@ -10,6 +10,12 @@ const debug = require('debug')('hafas-find-trips')
 
 const findTrip = (hafas, query, opt = {}) => {
 	const {latitude: lat, longitude: long} = query
+	if ('number' !== typeof lat || Number.isNaN(lat)) {
+		throw new Error('invalid query.latitude')
+	}
+	if ('number' !== typeof long || Number.isNaN(long)) {
+		throw new Error('invalid query.longitude')
+	}
 	const p = point([long, lat])
 
 	opt = Object.assign({
@@ -65,13 +71,16 @@ const findTrip = (hafas, query, opt = {}) => {
 
 				const nearestOnTrack = nearestPointOnLine(trackSlice, p)
 				const distanceToTrack = nearestOnTrack.properties.dist * 1000
+				debug(lineName, 'distanceToTrack', distanceToTrack)
+
 				const toVehicle = lineSlice(nearestOnTrack, loc, trackSlice)
 				const distanceOnTrack = length(toVehicle) * 1000
-				let score = distanceToTrack + Math.pow(distanceOnTrack, -3)
+				debug(lineName, 'distanceOnTrack', distanceOnTrack)
 
 				const match = {
 					movement: v,
-					distanceToTrack, distanceOnTrack
+					distanceToTrack, distanceOnTrack,
+					score: distanceToTrack + Math.pow(distanceOnTrack, -3)
 				}
 
 				if ('number' === typeof query.bearing) {
@@ -79,16 +88,17 @@ const findTrip = (hafas, query, opt = {}) => {
 					const nextStop = point(crds[crds.length - 1])
 					// todo: compute bearing using the track, not the next stop
 					const trackBearing = bearing(nearestOnTrack, nextStop)
-					match.trackBearing = trackBearing
-					score *= 1 + Math.abs(trackBearing - query.bearing) / 90
-				}
+					debug(lineName, 'trackBearing', trackBearing)
 
-				match.score = score
+					match.trackBearing = trackBearing
+					match.score *= 1 + Math.abs(trackBearing - query.bearing) / 90
+				}
 				matches.push(match)
 			})
 		}
 
 		const queue = new Queue({concurrency: 4})
+		debug(vehicles.length, 'vehicles')
 		for (let v of vehicles) queue.add(perVehicle(v))
 
 		return queue
