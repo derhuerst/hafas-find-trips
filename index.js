@@ -7,6 +7,8 @@ const lineSlice = require('@turf/line-slice').default
 const bearing = require('@turf/bearing').default
 const Queue = require('p-queue')
 const debug = require('debug')('hafas-find-trips')
+const length = require('@turf/length').default
+const along = require('@turf/along').default
 
 const findTrip = (hafas, query, opt = {}) => {
 	const {latitude: lat, longitude: long} = query
@@ -83,11 +85,18 @@ const findTrip = (hafas, query, opt = {}) => {
 					score: distanceToTrack + Math.pow(distanceOnTrack, -3)
 				}
 
+				// We determine a guide point 300 meters down the track to
+				// calculate the track bearing. This is more robust than taking
+				// the next stop as a guide because the patch from
+				// `nearestOnTrack` to the next stop might not be a direct path
+				// (it might be shaped like a U).
 				if ('number' === typeof query.bearing) {
 					const crds = trackSlice.coordinates
-					const nextStop = point(crds[crds.length - 1])
-					// todo: compute bearing using the track, not the next stop
-					const trackBearing = bearing(nearestOnTrack, nextStop)
+					const guideDistance = Math.min(.3, length(trackSlice))
+					debug(lineName, 'guideDistance', guideDistance)
+					const guide = along(trackSlice, guideDistance)
+					debug(lineName, 'guide', guide.geometry)
+					const trackBearing = bearing(nearestOnTrack, guide)
 					debug(lineName, 'trackBearing', trackBearing)
 
 					match.trackBearing = trackBearing
