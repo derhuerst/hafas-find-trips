@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="500" height="500" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg">
+	<style>
+		text {
+			font-family: HelveticaNeue, "Helvetica Neue", sans-serif;
+			font-weight: normal;
+		}
+	</style>
+	<g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+		<path d="M60,51 L60,60" id="distance-to-track" stroke="#555" stroke-width=".5"/>
+		<polyline id="track" stroke="#922A7D" stroke-width=".5" points="70 100 70 60 10 60 10 10 100 10"/>
+		<circle fill="#922A7D" cx="70" cy="92" r="1"/>
+		<circle id="prev-stop" fill="#922A7D" cx="70" cy="68" r="1"/>
+		<circle id="vehicle" fill="#FF4F00" cx="35" cy="60" r="2"/>
+		<path d="M59.6,50.9599924 L59.5999985,51 L59.4425797,50.9212906 C59.2074741,50.8531987 58.9902046,50.7431223 58.7994204,50.599711 L55.5999985,49 L58.7994204,47.400289 C58.9902046,47.2568777 59.2074741,47.1468013 59.4425794,47.0787095 L59.5999985,47 L59.5999985,47.0400076 C59.7292429,47.0137722 59.8630131,47 60,47 C61.1045695,47 62,47.8954305 62,49 C62,50.1045695 61.1045695,51 60,51 C59.8630131,51 59.7292429,50.9862278 59.5999985,50.9599924 Z" id="user" fill="#4EB63D"/>
+		<circle id="nearest-on-track" stroke="#555" stroke-width=".5" fill="#FFFFFF" cx="60" cy="60" r="1"/>
+		<circle id="nearest-on-track-copy" stroke="#555" stroke-width=".5" fill="#FFFFFF" cx="10" cy="25" r="1"/>
+		<circle id="next-stop" fill="#922A7D" cx="80" cy="10" r="1"/>
+		<text font-size="3" fill="#922A7D">
+			<tspan x="72" y="69">prev stop</tspan>
+		</text>
+		<text font-size="3" fill="#FF4F00">
+			<tspan x="37" y="58">vehicle</tspan>
+		</text>
+		<text font-size="3" fill="#32A7F0">
+			<tspan x="33" y="38">track bearing</tspan>
+		</text>
+		<text font-size="3" fill="#4EB63D">
+			<tspan x="62" y="47">user</tspan>
+		</text>
+		<text font-size="3" fill="#555">
+			<tspan x="61" y="56">distance to track</tspan>
+		</text>
+		<text font-size="3" fill="#555">
+			<tspan x="36" y="66">distance on track</tspan>
+		</text>
+		<text font-size="3" fill="#555">
+			<tspan x="14" y="50">300m guide</tspan>
+		</text>
+		<text font-size="3" fill="#922A7D">
+			<tspan x="81" y="9">next stop</tspan>
+		</text>
+		<path d="M60,63 L35,63" id="distance-on-track" stroke="#555" stroke-width=".5"/>
+		<polyline id="300m-guide" stroke="#555" stroke-width=".5" points="35 56 13 56 13 25"/>
+		<path d="M58,58 L13,25" id="Path-2" stroke="#32A7F0" stroke-width=".5"/>
+	</g>
+</svg>
