@@ -22,10 +22,10 @@ const findTrip = (hafas, query, opt = {}) => {
 	return hafas.radar({
 		// todo: make this meters-based
 		// todo: make this an option
-		north: lat + .01,
-		west: long - .01,
-		south: lat - .01,
-		east: long + .01
+		north: lat + .007,
+		west: long - .007,
+		south: lat - .007,
+		east: long + .007
 	}, {
 		results: opt.results,
 		duration: opt.duration,
