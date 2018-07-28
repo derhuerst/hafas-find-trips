@@ -2,7 +2,7 @@
 
 const createHafas = require('vbb-hafas')
 
-const findTrips = require('..')
+const findTrips = require('../lib/find-trips')
 // const recording = require('./stadtbahn.json')
 const recording = require('./u2-gleisdreieck.json')
 // const recording = require('./u2-stadtmitte.json')
