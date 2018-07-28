@@ -1,8 +1,10 @@
 'use strict'
 
-const hafas = require('vbb-hafas')
+const createHafas = require('vbb-hafas')
 
 const findTrips = require('.')
+
+const hafas = createHafas('hafas-find-trips-example')
 
 findTrips(hafas, {
 	// U6 tunnel, northbound

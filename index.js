@@ -1,6 +1,7 @@
 'use strict'
 
 const {getCoords} = require('@turf/invariant')
+const center = require('@turf/center').default
 const {point, lineString} = require('@turf/helpers')
 const nearestPointOnLine = require('@turf/nearest-point-on-line').default
 const lineSlice = require('@turf/line-slice').default
@@ -15,9 +16,13 @@ const matchTrack = require('./lib/match-track')
 const findTrip = (hafas, query, opt = {}) => {
 	if (!query.recording) throw new Error('missing query.recording')
 	const recPoints = getCoords(query.recording)
-	const [long, lat] = recPoints[recPoints.length - 1]
-	// todo: use center instead
-	const p = point(recPoints[recPoints.length - 1])
+	const start = point(recPoints[0])
+	const end = point(recPoints[recPoints.length - 1])
+	const recBearing = bearing(start, end)
+	debug('recBearing', recBearing)
+
+	const p = center(query.recording)
+	const [long, lat] = p.geometry.coordinates
 
 	opt = Object.assign({
 		results: 10,
@@ -41,8 +46,7 @@ const findTrip = (hafas, query, opt = {}) => {
 		const matches = []
 		// The vehicle movements from `radar()` are often *not* the actual
 		// position, but the estimated position, based on their current delays
-		// and their track. Because this is inaccurate, we check if `point` is
-		// close to where the vehicle has recently been or will soon be.
+		// and their track.
 
 		const perVehicle = (v) => () => {
 			const loc = point([v.location.longitude, v.location.latitude])
@@ -54,26 +58,50 @@ const findTrip = (hafas, query, opt = {}) => {
 				return Promise.resolve()
 			}
 
+			const frame = v.frames && v.frames[0] && v.frames[0]
+			let prev = frame && frame.origin
+			let next = frame && frame.destination
+			if (!prev || !next) {
+				debug(lineName, 'prev', !!prev, 'next', !!next)
+				return Promise.resolve() // todo: what to do here?
+			}
+			prev = point([prev.location.longitude, prev.location.latitude])
+			next = point([next.location.longitude, next.location.latitude])
+			const trackBearing = bearing(prev, next)
+
 			return hafas.trip(v.tripId, lineName, {
 				polyline: true,
 				stopovers: true
 			})
+			.catch((err) => {
+				if (err && err.isHafasError) {
+					debug(lineName, err + '')
+					return
+				}
+				throw err
+			})
 			.then((leg) => {
+				if (!leg) return;
+
 				const coords = leg.polyline.features.map(f => f.geometry.coordinates);
 				const track = lineString(coords)
 
 				const match = {
 					movement: v,
 					score: matchTrack(query.recording, track),
-					track
+					track, trackBearing
 				}
+				// todo: distance to matched track slice
+				match.score *= 1 + Math.abs(trackBearing - recBearing) / 90
 				matches.push(match)
 			})
 		}
 
 		const queue = new Queue({concurrency: 4})
-		debug(vehicles.length, 'vehicles')
-		for (let v of vehicles) queue.add(perVehicle(v))
+		for (let v of vehicles) {
+			debug('checking', v.line && v.line.name)
+			queue.add(perVehicle(v))
+		}
 
 		return queue
 		.onIdle()
