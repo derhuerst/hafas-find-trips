@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>hafas-find-trips demo</title>
+	<meta name="author" content="Jannis R <mail@jannisr.de>">
+	<meta name="viewport" content="width=device-width,initial-scale=1">
+</head>
+<body>
+	<pre><code id="log"></code></pre>
+	<button id="query">find trips</button>
+	<script>
+		const logEl = document.querySelector('#log')
+		const logMsg = msg => logEl.appendChild(document.createTextNode(msg + '\n'))
+		const logError = (err) => {
+			console.error(err)
+			logMsg(err.message)
+		}
+
+		const sendToApi = (data) => {
+			return fetch('/movements', {
+				mode: 'cors',
+				method: 'POST',
+				headers: {'content-type': 'application/json'},
+				body: JSON.stringify(data)
+			})
+			.then((res) => {
+				if (!res.ok) {
+					err.message = res.statusText
+					err.statusCode = res.status
+					throw err
+				}
+				return res.json()
+			})
+		}
+
+		const queryTrips = (positions) => {
+			sendToApi({
+				type: 'Feature',
+				properties: {},
+				geometry: {
+					type: 'LineString',
+					coordinates: positions.map(p => [p.longitude, p.latitude])
+				}
+			})
+			.then((matches) => {
+				matches
+				.filter(m => m.score < 250)
+				.sort((a, b) => a.score - b.score)
+				.forEach((match) => {
+					const m = match.movement
+					const n = m.line && m.line.name
+					logMsg([
+						n, m.direction, match.score.toFixed(2)
+					].join(' '))
+					// console.error(JSON.stringify(match.track))
+				})
+			})
+		}
+
+		const queryEl = document.querySelector('#query')
+		queryEl.addEventListener('click', () => {
+			const positions = []
+			const addPosition = () => {
+				navigator.geolocation.getCurrentPosition((pos) => {
+					logMsg(pos.coords.latitude + '|' + pos.coords.longitude)
+					positions.push(pos.coords)
+					if (positions.length >= 5) {
+						logMsg('collected enough, sending to api')
+						queryTrips(positions)
+					} else setTimeout(addPosition, 500)
+				}, logError)
+			}
+			addPosition()
+		})
+	</script>
+</body>
+</html>

@@ -3,8 +3,9 @@
 const express = require('express')
 const corser = require('corser')
 const compression = require('compression')
-const bodyParser = require('body-parser')
+const serveStatic = require('serve-static')
 const createHafas = require('vbb-hafas')
+const bodyParser = require('body-parser')
 
 const findTrips = require('./lib/find-trips')
 
@@ -13,11 +14,11 @@ app.use(corser.create({
 	requestHeaders: corser.simpleRequestHeaders.concat('User-Agent')
 }))
 app.use(compression())
-app.use(bodyParser.json())
+app.use(serveStatic(__dirname))
 
 const hafas = createHafas('hafas-find-trips-example')
 
-app.post('/', (req, res) => {
+app.post('/movements', bodyParser.json(), (req, res) => {
 	if (!req.body) res.status(400).end('missing recording, send JSON body')
 	const query = {recording: req.body}
 	if (req.query.product) query = req.query.product

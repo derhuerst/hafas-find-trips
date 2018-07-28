@@ -6,7 +6,8 @@
 	"files": [
 		"index.js",
 		"lib",
-		"examples"
+		"examples",
+		"index.html"
 	],
 	"keywords": [
 		"hafas",
@@ -43,6 +44,7 @@
 		"debug": "^4.1.0",
 		"express": "^4.16.3",
 		"p-queue": "^3.0.0",
+		"serve-static": "^1.13.2",
 		"vbb-hafas": "^5.0.1"
 	},
 	"scripts": {
