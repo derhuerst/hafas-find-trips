@@ -1,26 +1,15 @@
 'use strict'
 
-const {getCoords} = require('@turf/invariant')
 const center = require('@turf/center').default
 const {point, lineString} = require('@turf/helpers')
-const nearestPointOnLine = require('@turf/nearest-point-on-line').default
-const lineSlice = require('@turf/line-slice').default
-const bearing = require('@turf/bearing').default
 const Queue = require('p-queue')
 const debug = require('debug')('hafas-find-trips')
-const length = require('@turf/length').default
-const along = require('@turf/along').default
+const distance = require('@turf/distance').default
 
 const matchTrack = require('./lib/match-track')
 
 const findTrip = (hafas, query, opt = {}) => {
 	if (!query.recording) throw new Error('missing query.recording')
-	const recPoints = getCoords(query.recording)
-	const start = point(recPoints[0])
-	const end = point(recPoints[recPoints.length - 1])
-	const recBearing = bearing(start, end)
-	debug('recBearing', recBearing)
-
 	const p = center(query.recording)
 	const [long, lat] = p.geometry.coordinates
 
@@ -58,17 +47,6 @@ const findTrip = (hafas, query, opt = {}) => {
 				return Promise.resolve()
 			}
 
-			const frame = v.frames && v.frames[0] && v.frames[0]
-			let prev = frame && frame.origin
-			let next = frame && frame.destination
-			if (!prev || !next) {
-				debug(lineName, 'prev', !!prev, 'next', !!next)
-				return Promise.resolve() // todo: what to do here?
-			}
-			prev = point([prev.location.longitude, prev.location.latitude])
-			next = point([next.location.longitude, next.location.latitude])
-			const trackBearing = bearing(prev, next)
-
 			return hafas.trip(v.tripId, lineName, {
 				polyline: true,
 				stopovers: true
@@ -85,15 +63,14 @@ const findTrip = (hafas, query, opt = {}) => {
 
 				const coords = leg.polyline.features.map(f => f.geometry.coordinates);
 				const track = lineString(coords)
-
-				const match = {
-					movement: v,
-					score: matchTrack(query.recording, track),
-					track, trackBearing
+				const match = matchTrack(query.recording, track)
+				if (match) {
+					const loc = point([v.location.longitude, v.location.latitude])
+					match.distance = distance(p, loc) * 1000
+					match.score *= Math.pow(1 + match.distance, 1/3)
+					match.movement = v
+					matches.push(match)
 				}
-				// todo: distance to matched track slice
-				match.score *= 1 + Math.abs(trackBearing - recBearing) / 90
-				matches.push(match)
 			})
 		}
 

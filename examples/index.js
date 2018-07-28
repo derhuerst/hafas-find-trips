@@ -14,10 +14,7 @@ findTrips(hafas, {recording})
 	for (let match of matches) {
 		const m = match.movement
 		const n = m.line && m.line.name
-		console.error(n, {
-			score: match.score,
-			trackBearing: match.trackBearing
-		})
+		console.error(n, m.direction, match.score)
 		// console.error(JSON.stringify(match.track))
 	}
 })
