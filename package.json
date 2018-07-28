@@ -35,10 +35,9 @@
 		"@turf/line-to-polygon": "^6.0.1",
 		"@turf/nearest-point-on-line": "^6.0.2",
 		"debug": "^3.1.0",
-		"hafas-fetch-track-slice": "^0.1.1",
 		"p-queue": "^2.4.2"
 	},
 	"devDependencies": {
-		"vbb-hafas": "^5.0.0-alpha.4"
+		"vbb-hafas": "^5.0.0-alpha.6"
 	}
 }

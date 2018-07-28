@@ -1,7 +1,7 @@
 'use strict'
 
-const {point} = require('@turf/helpers')
-const fetchTrackSlice = require('hafas-fetch-track-slice')
+const {getCoords} = require('@turf/invariant')
+const {point, lineString} = require('@turf/helpers')
 const nearestPointOnLine = require('@turf/nearest-point-on-line').default
 const lineSlice = require('@turf/line-slice').default
 const bearing = require('@turf/bearing').default
@@ -10,15 +10,14 @@ const debug = require('debug')('hafas-find-trips')
 const length = require('@turf/length').default
 const along = require('@turf/along').default
 
+const matchTrack = require('./lib/match-track')
+
 const findTrip = (hafas, query, opt = {}) => {
-	const {latitude: lat, longitude: long} = query
-	if ('number' !== typeof lat || Number.isNaN(lat)) {
-		throw new Error('invalid query.latitude')
-	}
-	if ('number' !== typeof long || Number.isNaN(long)) {
-		throw new Error('invalid query.longitude')
-	}
-	const p = point([long, lat])
+	if (!query.recording) throw new Error('missing query.recording')
+	const recPoints = getCoords(query.recording)
+	const [long, lat] = recPoints[recPoints.length - 1]
+	// todo: use center instead
+	const p = point(recPoints[recPoints.length - 1])
 
 	opt = Object.assign({
 		results: 10,
@@ -29,10 +28,10 @@ const findTrip = (hafas, query, opt = {}) => {
 	return hafas.radar({
 		// todo: make this meters-based
 		// todo: make this an option
-		north: lat + .005,
-		west: long - .005,
-		south: lat - .005,
-		east: long + .005
+		north: lat + .01,
+		west: long - .01,
+		south: lat - .01,
+		east: long + .01
 	}, {
 		results: opt.results,
 		duration: opt.duration,
@@ -55,52 +54,18 @@ const findTrip = (hafas, query, opt = {}) => {
 				return Promise.resolve()
 			}
 
-			const frame = v.frames && v.frames[0] && v.frames[0]
-			const prev = frame && frame.origin
-			const next = frame && frame.destination
-			if (!prev || !next) {
-				debug(lineName, 'prev', !!prev, 'next', !!next)
-				return Promise.resolve() // todo: what to do here?
-			}
-
-			return fetchTrackSlice(hafas, prev, next, v.journeyId, lineName)
-			.catch(() => null) // swallow errors
-			.then((trackSlice) => {
-				if (!trackSlice) {
-					debug(lineName, 'no trackSlice')
-					return null
-				}
-
-				const nearestOnTrack = nearestPointOnLine(trackSlice, p)
-				const distanceToTrack = nearestOnTrack.properties.dist * 1000
-				debug(lineName, 'distanceToTrack', distanceToTrack)
-
-				const toVehicle = lineSlice(nearestOnTrack, loc, trackSlice)
-				const distanceOnTrack = length(toVehicle) * 1000
-				debug(lineName, 'distanceOnTrack', distanceOnTrack)
+			return hafas.trip(v.tripId, lineName, {
+				polyline: true,
+				stopovers: true
+			})
+			.then((leg) => {
+				const coords = leg.polyline.features.map(f => f.geometry.coordinates);
+				const track = lineString(coords)
 
 				const match = {
 					movement: v,
-					distanceToTrack, distanceOnTrack,
-					score: Math.sqrt(distanceToTrack) + Math.pow(distanceOnTrack, -3)
-				}
-
-				// We determine a guide point 300 meters down the track to
-				// calculate the track bearing. This is more robust than taking
-				// the next stop as a guide because the patch from
-				// `nearestOnTrack` to the next stop might not be a direct path
-				// (it might be shaped like a U).
-				if ('number' === typeof query.bearing) {
-					const crds = trackSlice.coordinates
-					const guideDistance = Math.min(.3, length(trackSlice))
-					debug(lineName, 'guideDistance', guideDistance)
-					const guide = along(trackSlice, guideDistance)
-					debug(lineName, 'guide', guide.geometry)
-					const trackBearing = bearing(nearestOnTrack, guide)
-					debug(lineName, 'trackBearing', trackBearing)
-
-					match.trackBearing = trackBearing
-					match.score *= 1 + Math.abs(trackBearing - query.bearing) / 90
+					score: matchTrack(query.recording, track),
+					track
 				}
 				matches.push(match)
 			})
