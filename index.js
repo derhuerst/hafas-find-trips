@@ -58,11 +58,11 @@ const findTrip = (hafas, query, opt = {}) => {
 				}
 				throw err
 			})
-			.then((leg) => {
-				if (!leg) return;
-				if (!leg.polyline) throw new Error('missing leg.polyline')
+			.then((trip) => {
+				if (!trip) return;
+				if (!trip.polyline) throw new Error('missing trip.polyline')
 
-				const coords = leg.polyline.features.map(f => f.geometry.coordinates);
+				const coords = trip.polyline.features.map(f => f.geometry.coordinates);
 				const track = lineString(coords)
 				const match = matchTrack(query.recording, track)
 				if (match) {
@@ -70,6 +70,7 @@ const findTrip = (hafas, query, opt = {}) => {
 					match.distance = distance(p, loc) * 1000
 					match.score *= Math.pow(1 + match.distance, 1/3)
 					match.movement = v
+					Object.defineProperty(match, 'trip', {value: trip})
 					matches.push(match)
 				}
 			})
