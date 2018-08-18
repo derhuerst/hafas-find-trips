@@ -25,25 +25,25 @@ npm install hafas-find-trips
 
 ## Usage
 
-If possible, provide location, bearing and product. An example from Berlin:
-
-```js
-const query = {
-	// U6 tunnel, northbound
-	latitude: 52.496633,
-	longitude: 13.390944,
-	bearing: 16, // degrees, 0 is north
-	product: 'subway'
-}
-```
-
-If you don't provide the product, `hafas-find-trips` will instead apply its heuristic to all vehicles nearby. If you don't provide a bearing, it will estimate purely on the distance to the track of each vehicle.
+Provide a track of user locations from the last ~10 seconds as [GeoJSON `LineString`](https://tools.ietf.org/html/rfc7946#section-3.1.4). If possible, provide a product in addition.
 
 ```js
 const findTrips = require('hafas-find-trips')
-const hafas = require('vbb-hafas')
+const createHafas = require('vbb-hafas')
 
-findTrips(hafas, query)
+const hafas = createHafas('my-awesome-program')
+
+findTrips(hafas, {
+	recording: {
+		type: 'Feature',
+		properties: {},
+		geometry: { // GeoJSON LineString
+			type: 'LineString',
+			coordinates: [ /* … */ ]
+		}
+	},
+	product: 'subway' // optional
+})
 .then((matches) => {
 	for (let match of matches) {
 		const m = match.movement
@@ -55,6 +55,8 @@ findTrips(hafas, query)
 	process.exitCode = 1
 })
 ```
+
+If you don't provide the product, it will instead apply its heuristic to all vehicles nearby.
 
 
 ## Contributing
