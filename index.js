@@ -60,6 +60,7 @@ const findTrip = (hafas, query, opt = {}) => {
 			})
 			.then((leg) => {
 				if (!leg) return;
+				if (!leg.polyline) throw new Error('missing leg.polyline')
 
 				const coords = leg.polyline.features.map(f => f.geometry.coordinates);
 				const track = lineString(coords)
@@ -75,13 +76,10 @@ const findTrip = (hafas, query, opt = {}) => {
 		}
 
 		const queue = new Queue({concurrency: 4})
-		for (let v of vehicles) {
+		return queue.addAll(vehicles.map(v => {
 			debug('checking', v.line && v.line.name)
-			queue.add(perVehicle(v))
-		}
-
-		return queue
-		.onIdle()
+			return perVehicle(v)
+		}))
 		.then(() => matches)
 	})
 }
