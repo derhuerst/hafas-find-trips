@@ -1,7 +1,7 @@
 {
 	"name": "hafas-find-trips",
 	"description": "Provide location and bearing, get a list of vehicles you're most likely in.",
-	"version": "1.0.3",
+	"version": "1.0.4",
 	"main": "index.js",
 	"files": [
 		"index.js",
@@ -38,7 +38,8 @@
 		"@turf/simplify": "^5.1.5",
 		"@turf/unkink-polygon": "^5.1.5",
 		"debug": "^3.1.0",
-		"p-queue": "^2.4.2"
+		"p-queue": "^3.0.0",
+		"queue": "^5.0.0"
 	},
 	"devDependencies": {
 		"vbb-hafas": "^5.0.0"
