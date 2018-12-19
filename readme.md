@@ -8,8 +8,6 @@ Location and bearing are expected to be inaccurate because they come from a mobi
 - checks if the location is close to where vehicles have recently been or will soon be,
 - takes the bearing of each vehicle into account.
 
-![how it works](how-it-works.svg)
-
 [![npm version](https://img.shields.io/npm/v/hafas-find-trips.svg)](https://www.npmjs.com/package/hafas-find-trips)
 ![ISC-licensed](https://img.shields.io/github/license/derhuerst/hafas-find-trips.svg)
 [![chat with me on Gitter](https://img.shields.io/badge/chat%20with%20me-on%20gitter-512e92.svg)](https://gitter.im/derhuerst)
