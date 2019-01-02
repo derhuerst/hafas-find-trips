@@ -1,12 +1,12 @@
 # hafas-find-trips
 
-**Provide location and bearing, get the public transport vehicle you're most likely in.**
+**Provide location and bearing/heading, get the public transport vehicle you're most likely in.**
 
-Location and bearing are expected to be inaccurate because they come from a mobile device. Also, The vehicle movements from [the underlying `radar()` API](https://github.com/public-transport/hafas-client/blob/0840d69ee9cc0fb9b4bf35237fa93f677991bd7d/docs/journey-leg.md) are often *not* the actual position, but the estimated position, based on their current delays and their track. To compensate for this, `hafas-find-trips`
+Location and bearing/heading are expected to be inaccurate because they come from a mobile device. Also, The vehicle movements from [the underlying `radar()` API](https://github.com/public-transport/hafas-client/blob/ecc26ef313b75f9bedcf4ee1b2b95aebb3478379/docs/trip.md) are often *not* the actual position, but the estimated position, based on their current delays and their track. To compensate for this, `hafas-find-trips`
 
 - filters by product if you provide one,
 - checks if the location is close to where vehicles have recently been or will soon be,
-- takes the bearing of each vehicle into account.
+- takes the bearing/heading of each vehicle into account.
 
 [![npm version](https://img.shields.io/npm/v/hafas-find-trips.svg)](https://www.npmjs.com/package/hafas-find-trips)
 ![ISC-licensed](https://img.shields.io/github/license/derhuerst/hafas-find-trips.svg)
