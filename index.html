@@ -9,7 +9,8 @@
 </head>
 <body>
 	<pre><code id="log"></code></pre>
-	<button id="query">find trips</button>
+	<button id="query-vbb">find trips with VBB</button>
+	<button id="query-bvg">find trips with BVG</button>
 	<script>
 		const logEl = document.querySelector('#log')
 		const logMsg = msg => logEl.appendChild(document.createTextNode(msg + '\n'))
@@ -18,8 +19,8 @@
 			logMsg(err)
 		}
 
-		const sendToApi = (data) => {
-			return fetch('/movements', {
+		const sendToApi = (network, data) => {
+			return fetch(`/${network}/movements`, {
 				mode: 'cors',
 				method: 'POST',
 				headers: {'content-type': 'application/json'},
@@ -37,8 +38,8 @@
 			})
 		}
 
-		const queryTrips = (positions) => {
-			sendToApi({
+		const queryTrips = (network, positions) => {
+			sendToApi(network, {
 				type: 'Feature',
 				properties: {},
 				geometry: {
@@ -59,10 +60,10 @@
 					// console.error(JSON.stringify(match.track))
 				})
 			})
+			.catch(logError)
 		}
 
-		const queryEl = document.querySelector('#query')
-		queryEl.addEventListener('click', () => {
+		const queryAndSend = network => () => {
 			const positions = []
 			const addPosition = () => {
 				navigator.geolocation.getCurrentPosition((pos) => {
@@ -70,12 +71,17 @@
 					positions.push(pos.coords)
 					if (positions.length >= 5) {
 						logMsg('collected enough, sending to api')
-						queryTrips(positions)
+						queryTrips(network, positions)
 					} else setTimeout(addPosition, 500)
 				}, logError)
 			}
 			addPosition()
-		})
+		}
+
+		const queryVbbEl = document.querySelector('#query-vbb')
+		queryVbbEl.addEventListener('click', queryAndSend('vbb'))
+		const queryBvgEl = document.querySelector('#query-bvg')
+		queryBvgEl.addEventListener('click', queryAndSend('bvg'))
 	</script>
 </body>
 </html>
