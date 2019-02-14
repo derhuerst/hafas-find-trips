@@ -19,7 +19,7 @@ app.use(serveStatic(__dirname))
 const hafas = createHafas('hafas-find-trips-example')
 
 app.post('/movements', bodyParser.json(), (req, res) => {
-	if (!req.body) res.status(400).end('missing recording, send JSON body')
+	if (!req.body) return res.status(400).end('missing recording, send JSON body')
 	const query = {recording: req.body}
 	if (req.query.product) query = req.query.product
 

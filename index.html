@@ -15,7 +15,7 @@
 		const logMsg = msg => logEl.appendChild(document.createTextNode(msg + '\n'))
 		const logError = (err) => {
 			console.error(err)
-			logMsg(err.message)
+			logMsg(err)
 		}
 
 		const sendToApi = (data) => {
@@ -27,9 +27,11 @@
 			})
 			.then((res) => {
 				if (!res.ok) {
-					err.message = res.statusText
-					err.statusCode = res.status
-					throw err
+					return res.text().then((msg) => {
+						const err = new Error(msg)
+						err.statusCode = res.status
+						throw err
+					})
 				}
 				return res.json()
 			})
